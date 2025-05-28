@@ -25,7 +25,7 @@ jobs:
         $source = "$env:USERPROFILE\Desktop"
         $dest = "gdrive:/RDP-Backup"
         while ($true) {
-          $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+       
           & $rclone copy "$source" "$dest/Desktop-$timestamp" --config "$env:USERPROFILE\rclone\rclone.conf"
           Start-Sleep -Seconds 60
         }
