@@ -2,11 +2,12 @@ name: TOOLBOXLAP
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '0 */6 * * *'  # Auto re-run every 6 hours
 
 jobs:
   setup-rdp-tunnel:
-    runs-on: windows-2025
-
+    runs-on: windows-2022
     steps:
     - name: Check out the repository
       uses: actions/checkout@v2
@@ -34,3 +35,32 @@ jobs:
     - name: Keep the GitHub Action Runner Alive
       run: |
           Start-Sleep -Seconds 21600  # Adjust the duration based on your needs
+
+    steps:
+    - name: Download & Setup Rclone
+      run: |
+        Invoke-WebRequest -Uri "https://downloads.rclone.org/rclone-current-windows-amd64.zip" -OutFile "rclone.zip"
+        Expand-Archive rclone.zip -DestinationPath "$env:USERPROFILE\rclone"
+        Move-Item "$env:USERPROFILE\rclone\rclone-*\rclone.exe" "$env:USERPROFILE\rclone\rclone.exe"
+        $rcloneConf = "${{ secrets.RCLONE_CONF }}"
+        $rclonePath = "$env:USERPROFILE\rclone\rclone.conf"
+        $rcloneConf | Out-File -FilePath $rclonePath -Encoding ASCII
+
+    - name: Start Backup Loop (Every 1 Minute)
+      run: |
+        $rclone = "$env:USERPROFILE\rclone\rclone.exe"
+        $source = "$env:USERPROFILE\Desktop"
+        $dest = "gdrive:/RDP-Backup"
+        while ($true) {
+          $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+          & $rclone copy "$source" "$dest/Desktop-$timestamp" --config "$env:USERPROFILE\rclone\rclone.conf"
+          Start-Sleep -Seconds 60
+        }
+
+    - name: Self-trigger next run
+      if: always()
+      run: |
+        Invoke-WebRequest -Uri "https://api.github.com/repos/${{ github.repository }}/actions/workflows/rdp-rclone.yml/dispatches" `
+          -Method POST `
+          -Headers @{Authorization = "Bearer ${{ secrets.GITHUB_TOKEN }}"; Accept = "application/vnd.github+json"} `
+          -Body '{"ref":"main"}'
