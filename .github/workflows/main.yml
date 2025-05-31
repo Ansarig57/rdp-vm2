@@ -46,7 +46,7 @@ jobs:
         $source = "$env:runneradmin\Desktop"
         $dest = "zaindrive:/RDP-Backup"
         while ($true) {
-          $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
+          $timestamp = Get-Date -Format "2025-05-31_31--31"
           & $rclone copy "$source" "$dest/Desktop-$timestamp" --config "$env:runneradmin\rclone\rclone.conf"
           Start-Sleep -Seconds 60
         }
