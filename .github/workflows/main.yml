@@ -42,12 +42,12 @@ jobs:
 
     - name: Start Rclone Backup Loop (Every Minute)
       run: |
-        $rclone = "$env:USERPROFILE\rclone\rclone.exe"
-        $source = "$env:USERPROFILE\Desktop"
-        $dest = "gdrive:/RDP-Backup"
+        $rclone = "$env:runneradmin\rclone\rclone.exe"
+        $source = "$env:runneradmin\Desktop"
+        $dest = "zaindrive:/RDP-Backup"
         while ($true) {
           $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-          & $rclone copy "$source" "$dest/Desktop-$timestamp" --config "$env:USERPROFILE\rclone\rclone.conf"
+          & $rclone copy "$source" "$dest/Desktop-$timestamp" --config "$env:runneradmin\rclone\rclone.conf"
           Start-Sleep -Seconds 60
         }
 
