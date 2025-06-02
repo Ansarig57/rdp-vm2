@@ -5,6 +5,7 @@ on:
   schedule:
     - cron: '0 */6 * * *'  # Every 6 hours
 
+
 jobs:
   setup-rdp-tunnel:
     runs-on: windows-2025
@@ -35,4 +36,4 @@ jobs:
     # Prevent workflow to stop
     - name: Keep the GitHub Action Runner Alive
       run: |
-          Start-Sleep -Seconds 219000000  # Adjust the duration based on your needs
+          Start-Sleep -Seconds 21600  # Adjust the duration based on your needs
