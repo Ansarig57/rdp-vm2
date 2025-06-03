@@ -19,17 +19,14 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText $Password -Force)
         echo $Password > rdp-password.txt
 
-        shell: bash
-
-
-  - name: 🔐 Commit & Push password
+     - name: 🔐 Commit & Push password
   shell: bash
   run: |
     echo "admin@123" > rdp-password.txt
     git config user.name "github-actions"
     git config user.email "github-actions@github.com"
     git add rdp-password.txt
-    git commit -m "🔐 Update RDP password" || echo "No changes to commit"
+    git commit -m "🔐 Update RDP password" || echo "no changes"
     git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/Ansarig57/rdp-vm2.git HEAD:main
 
 
