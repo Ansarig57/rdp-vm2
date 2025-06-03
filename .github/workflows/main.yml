@@ -1,49 +1,23 @@
-name: TOOLBOXLAP
+name: RDP Only Minimal Setup
 
 on:
   workflow_dispatch:
 
 jobs:
-  setup-rdp-tunnel:
-    runs-on: windows-2025
+  run-rdp:
+    runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    - name: Generate and Save Password
+    - name: Change RDP password
       run: |
-        $newPassword = "admin@" + (Get-Random -Minimum 1000 -Maximum 9999)
-        $newPassword | Out-File -FilePath rdp-password.txt -Encoding ascii
-        echo "::set-output name=rdpPass::$newPassword"
-      id: generate_password
+        $password = "Admin@$(Get-Random -Minimum 1000 -Maximum 9999)"
+        net user runneradmin $password
+        echo "🔐 New RDP password: $password"
 
-    - name: Commit new password file
+    - name: Start Playit tunnel
       run: |
-        git config --global user.name "github-actions"
-        git config --global user.email "actions@github.com"
-        git add rdp-password.txt
-        git commit -m "🔐 Update RDP password"
-        git push https://x-access-token:${{ secrets.PAT }}@github.com/${{ github.repository }} HEAD:main
+        iwr -Uri https://playit-cloud.github.io/Windows/Playit.exe -OutFile playit.exe
+        Start-Process ".\playit.exe" -ArgumentList "authtoken=${{ secrets.PLAYIT_AUTH }}" -NoNewWindow
 
-    - name: Download and Install Playit
-      run: |
-        Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile "$env:USERPROFILE\playit.exe"
-        Start-Sleep -Seconds 5
-
-    - name: Enable Remote Desktop
-      run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
-        Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
-        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "${{ steps.generate_password.outputs.rdpPass }}" -Force)
-
-    - name: Start Playit Tunnel
-      env:
-        PLAYIT_AUTH_KEY: ${{ secrets.PL }}
-      run: |
-        Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow -Wait
-        Start-Process -FilePath "$env:USERPROFILE\playit.exe" -NoNewWindow
-
-    - name: Keep Alive
-      run: Start-Sleep -Seconds 21600 # 6 hours
+    - name: Keep alive
+      run: Start-Sleep -Seconds 3600
