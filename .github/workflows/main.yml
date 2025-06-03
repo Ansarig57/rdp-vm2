@@ -1,6 +1,8 @@
 name: TOOLBOXLAP
 
 on:
+  schedule:
+    - cron: '0 */6 * * *' # Runs every 6 hours
   workflow_dispatch:
 
 jobs:
@@ -11,35 +13,37 @@ jobs:
     - name: Check out the repository
       uses: actions/checkout@v2
 
+    - name: Set Random Password & Save to File
+      run: |
+        $Password = -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 10 | % {[char]$_})
+        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText $Password -Force)
+        echo $Password > rdp-password.txt
+
+    - name: Commit Updated Password
+      env:
+        TOKEN: ${{ secrets.GH_PAT }}
+      run: |
+        git config user.name github-actions
+        git config user.email actions@github.com
+        git add rdp-password.txt
+        git commit -m "🔐 Update RDP password"
+        git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
+
     - name: Download and Install Playit
       run: |
         Invoke-WebRequest -Uri "https://github.com/playit-cloud/playit-agent/releases/download/v0.15.26/playit-windows-x86_64-signed.exe" -OutFile "$env:USERPROFILE\playit.exe"
         Start-Sleep -Seconds 5
-        
-    - name: Enable RDP Access
+
+    - name: Enable Terminal Services & Firewall
       run: |
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -Name "fDenyTSConnections" -Value 0
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -Value 0
         Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -Name "UserAuthentication" -Value 1
-        Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText "admin@123" -Force)
+        Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -Value 1
 
     - name: Start Playit Tunnel
       env:
         PLAYIT_AUTH_KEY: ${{ secrets.PL }}
-      run: |
-        Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY" -NoNewWindow
-
-        - name: Commit and Push Password File
-      shell: bash
-      run: |
-        echo "admin@123" > rdp-password.txt
-        git config --global user.email "github-actions@github.com"
-        git config --global user.name "github-actions"
-        git remote set-url origin https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}
-        git add rdp-password.txt
-        git commit -m "🔐 Update RDP password" || echo "No changes"
-        git push
-
+      run: Start-Process -FilePath "$env:USERPROFILE\playit.exe" -ArgumentList "--secret $env:PLAYIT_AUTH_KEY"
 
     - name: Keep Alive
-      run: Start-Sleep -Seconds 21600  # 6 hours
+      run: Start-Sleep -Seconds 21600
