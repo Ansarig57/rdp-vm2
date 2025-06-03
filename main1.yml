@@ -1,0 +1,40 @@
+name: setup-rdp-tunnel
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set RDP password
+      run: |
+        $password = "Admin@$(Get-Random -Minimum 1000 -Maximum 9999)"
+        net user runneradmin $password
+        echo $password > rdp-password.txt
+        echo "🔐 Password set to: $password"
+
+    - name: Commit updated password
+      run: |
+        git config user.name "github-actions"
+        git config user.email "github-actions@github.com"
+        git add rdp-password.txt
+        git commit -m "🔐 Update RDP password"
+        git push https://x-access-token:${{ secrets.PUSH_TOKEN }}@github.com/${{ github.repository }}.git
+      env:
+        PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+
+    - name: Install & run Playit tunnel
+      run: |
+        iwr -Uri https://playit-cloud.github.io/Windows/Playit.exe -OutFile playit.exe
+        Start-Process ".\playit.exe" -ArgumentList "authtoken=${{ secrets.PLAYIT_AUTH }}" -NoNewWindow
+
+    - name: Keep alive
+      run: Start-Sleep -Seconds 3600
