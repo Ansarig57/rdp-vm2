@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Free RDP by AnsariG57</title>
+  <style>
+    body { font-family: sans-serif; background-color: #f9f9f9; text-align: center; padding: 40px; }
+    h1 { color: #333; }
+    .card {
+      background: white; padding: 20px; margin: auto; max-width: 500px;
+      border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    pre { background: #f0f0f0; padding: 10px; border-radius: 8px; }
+    a.button {
+      background: #ff0000; color: white; padding: 10px 20px; border-radius: 8px;
+      text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🎉 Free RDP Access</h1>
+    <p><strong>Note:</strong> Sirf ek user ek time par connect ho sakta hai</p>
+    <h3>🔐 Latest Password:</h3>
+    <pre id="password">Loading...</pre>
+    <a class="button" href="https://www.youtube.com/@Sololeveling313" target="_blank">Subscribe on YouTube</a>
+  </div>
+
+  <script>
+    fetch("https://raw.githubusercontent.com/Ansarig57/rdp-vm2/main/rdp-password.txt")
+      .then(res => res.text())
+      .then(text => document.getElementById("password").innerText = text.trim())
+      .catch(() => document.getElementById("password").innerText = "Error loading password.");
+  </script>
+</body>
+</html>
