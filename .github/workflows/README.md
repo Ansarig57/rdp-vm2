@@ -1,29 +1,16 @@
-# 🔐 Free RDP via GitHub Actions + Netlify
+# ⚡ Free RDP by ToolboxLap
 
-This project gives free RDP access using GitHub Actions. It auto-generates a password every 6 hours, and shows that password on a hosted webpage via Netlify.
-
----
-
-## 📂 How it works:
-
-- **GitHub Action** runs every 6 hours (cron job)
-- It installs and runs **Playit Agent**
-- It sets a new random RDP password for the user
-- Password is saved in `rdp-password.txt`
-- A public HTML page (`index.html`) shows this password live
-- Hosted using **Netlify**
-
----
+This GitHub Action spins up a free RDP session every 6 hours.
 
 ## 🔗 Links
 
-- 🔓 [Live Website](https://your-netlify-link.netlify.app/)
+- 🔓 [Live Website](https://freerdps.netlify.app/)
 - 📁 [Password File](rdp-password.txt)
 - 📦 [Workflow File](.github/workflows/main.yml)
 - ▶️ [YouTube Channel](https://www.youtube.com/@Sololeveling313)
 
----
-
-## 🧠 Author
-
-Made with ❤️ by [@Ansarig57](https://github.com/Ansarig57)
+## ✅ How it works
+1. GitHub Action launches RDP
+2. Password is generated and saved
+3. Password is pushed to repo (and visible on Netlify site)
+4. Playit creates tunnel for access
