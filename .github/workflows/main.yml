@@ -19,15 +19,15 @@ jobs:
         Set-LocalUser -Name "runneradmin" -Password (ConvertTo-SecureString -AsPlainText $Password -Force)
         echo $Password > rdp-password.txt
 
-    - name: Commit Updated Password
-      env:
-        TOKEN: ${{ secrets.GH_PAT }}
-      run: |
-        git config user.name github-actions
-        git config user.email actions@github.com
-        git add rdp-password.txt
-        git commit -m "🔐 Update RDP password"
-        git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/${{ github.repository }}.git
+   - name: 🔐 Commit & Push password
+  run: |
+    echo "admin@123" > rdp-password.txt
+    git config user.name github-actions
+    git config user.email github-actions@github.com
+    git add rdp-password.txt
+    git commit -m "🔐 Update RDP password"
+    git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/Ansarig57/rdp-vm2.git HEAD:main
+
 
     - name: Download and Install Playit
       run: |
