@@ -1,28 +1,21 @@
-name: Auto RDP Setup
+name: Free RDP
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 */6 * * *'  # Every 6 hours (adjust if needed)
 
 jobs:
   rdp:
     runs-on: windows-latest
 
     steps:
-    - name: 🔐 Set new RDP password
-      shell: pwsh
-      run: |
-        $Password = "Admin@$(Get-Random -Minimum 1000 -Maximum 9999)"
-        net user runneradmin $Password
-        Write-Output "🟢 RDP password: $Password"
+    - name: 🔐 Set RDP password
+      run: net user runneradmin admin@123
 
     - name: 🔌 Start Playit tunnel
-      shell: pwsh
       run: |
         iwr -Uri https://playit-cloud.github.io/Windows/Playit.exe -OutFile playit.exe
         .\playit.exe authtoken ${{ secrets.PLAYIT_AUTH }}
 
     - name: 🕒 Keep session alive
-      shell: pwsh
-      run: Start-Sleep -Seconds 3600
+      run: timeout /t 3600
+
